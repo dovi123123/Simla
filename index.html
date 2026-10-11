@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffc61a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>שמלה חדשה – לימוד יומי</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fbfaf6;--ink:#1d1b16;--mute:#6f6a5c;--line:#d9d3c0;--gold:#ffc61a;--panel:#f1eee3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15140f;--ink:#ece8da;--mute:#a49e8b;--line:#38352b;--panel:#1f1d16}}
+:root[data-theme="dark"]{--bg:#15140f;--ink:#ece8da;--mute:#a49e8b;--line:#38352b;--panel:#1f1d16}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 60px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Heebo,Arial,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:2px solid var(--gold);display:flex;gap:8px;align-items:center;padding:8px 12px}
+header h1{font:700 17px Heebo,Arial,sans-serif;margin:0;flex:1}
+button,select,textarea{font:500 14px Heebo,Arial,sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 11px}
+button:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+button.on{background:var(--gold);color:#1d1b16;border-color:var(--gold)}
+.bar{display:flex;gap:8px;padding:10px 12px;align-items:center}
+.bar button{flex:1}.bar select{flex:1}
+.panel{display:none;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 12px;gap:8px;flex-wrap:wrap;align-items:center}
+.panel.open{display:flex}
+.panel textarea{width:100%;font-size:14px}
+.prog{height:4px;background:var(--line);margin:0 12px;border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--gold);width:0;transition:width .3s}
+#hd{padding:6px 12px;color:var(--mute);font-size:14px}
+main{max-width:900px;margin:0 auto;padding:4px 10px 90px}
+.pg{margin:10px 0;overflow-x:auto;border:1px solid var(--line);border-radius:4px;min-height:40vh;background:var(--pb,#fff)}
+.pg canvas{display:block}
+.pg canvas{filter:var(--pf,none)}
+.lb{font-size:12px;color:var(--mute);padding:2px 8px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px;line-height:1.7}
+.done{width:100%;padding:13px;margin:12px 0}
+.fl{position:relative;display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-weight:500;overflow:hidden}.fl.on{background:var(--gold);color:#1d1b16;border-color:var(--gold)}.fl input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:0;cursor:pointer}
+.row{display:flex;gap:8px;align-items:center;width:100%}.row label,.row span{min-width:96px}.row input[type=range]{flex:1;accent-color:var(--gold)}.row select{flex:1}
+#dots{display:grid;grid-template-columns:repeat(15,1fr);gap:7px;padding:8px 12px 4px}.dot{aspect-ratio:1;border-radius:50%;border:2px solid var(--mute);background:transparent;padding:0;min-width:0;font:500 10px Heebo,Arial,sans-serif;color:var(--ink);display:flex;align-items:center;justify-content:center}.dot.full{background:var(--gold);border-color:var(--gold);color:#1d1b16}.dot.now{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
+#vs{position:fixed;right:3px;top:calc(env(safe-area-inset-top,0px) + 120px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:6px;border-radius:3px;background:var(--line);opacity:.8;z-index:4;pointer-events:none;display:none}#vs i{position:absolute;left:0;top:0;width:100%;height:44px;border-radius:3px;background:var(--gold)}
+</style>
+</head>
+<body>
+<header><h1>שמלה חדשה</h1><button id="bSet">הגדרות</button></header>
+<div class="panel" id="panel">
+<div class="row"><span>גודל</span><button id="zm">−</button><b id="zv">100%</b><button id="zp">+</button></div>
+<div class="row"><label for="bri">בהירות</label><input type="range" id="bri" min="50" max="130" step="5"></div>
+<div class="row"><label for="con">ניגודיות</label><input type="range" id="con" min="70" max="180" step="5"></div>
+<div class="row"><label for="pt">צבע העמוד</label><select id="pt"><option value="auto">אוטומטי</option><option value="white">לבן</option><option value="cream">קרם</option><option value="dark">כהה</option><option value="warm">כהה חם</option></select></div>
+<div class="row"><label for="at">מצב האפליקציה</label><select id="at"><option value="">לפי המכשיר</option><option value="light">בהיר</option><option value="dark">כהה</option></select></div>
+<div class="row"><label for="ac">צבע הדגשה</label><select id="ac"><option value="#ffc61a">זהב</option><option value="#4a90e2">כחול</option><option value="#3fae6a">ירוק</option><option value="#8e6bd8">סגול</option><option value="#e0689a">ורוד</option></select></div>
+<button id="rs">איפוס הגדרות תצוגה</button>
+</div>
+<div class="bar" id="tabs"><button data-t="today">היום</button><button data-t="extra">הקדמות ותפילות</button></div>
+<div class="bar" id="sub"><select id="daySel" aria-label="בחירה"></select></div>
+<div id="hd"></div>
+<div id="dots" aria-label="התקדמות החודש"></div>
+<main id="main"></main>
+<div id="vs" aria-hidden="true"><i></i></div>
+<script>
+var NAMES="א ב ג ד ה ו ז ח ט י יא יב יג יד טו טז יז יח יט כ כא כב כג כד כה כו כז כח כט ל".split(" ");
+var START=[29,36,40,46,53,59,64,70,75,82,90,97,105,113,121,128,135,141,146,156,171,180,189,197,208,219,230,240,250,258],LAST=268;
+var EXTRAS=[["הסכמות",7,15],["פתח דבר",16,19],["הקדמת המחבר",20,21],["הקדמת מטה אשר",22,25],["תפילה לשוחט",26,28]];
+var K="simla_pdf_v1",S={starts:START,read:{},rm:"",tab:"today",cut:18,zoom:1,theme:"",sel:0,xsel:0,bri:100,con:100,pt:"auto",ac:"#ffc61a"};
+try{var r=localStorage.getItem(K);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+if(S.tab==="all")S.tab="today";
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+var $=function(i){return document.getElementById(i)},DOC=null,H;
+function idb(mode,fn){return new Promise(function(res,rej){var q=indexedDB.open("simla",1);q.onupgradeneeded=function(){q.result.createObjectStore("f")};q.onerror=function(){rej(q.error)};
+q.onsuccess=function(){var tx=q.result.transaction("f",mode),x=fn(tx.objectStore("f"));tx.oncomplete=function(){res(x&&x.result)};tx.onerror=function(){rej(tx.error)}}})}
+function openBlob(b){return b.arrayBuffer().then(function(ab){return pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise}).then(function(d){DOC=d;render()})}
+function num(s){if(/^\d+$/.test(s))return +s;var v={"א":1,"ב":2,"ג":3,"ד":4,"ה":5,"ו":6,"ז":7,"ח":8,"ט":9,"י":10,"כ":20,"ל":30},t=0;String(s).split("").forEach(function(c){t+=v[c]||0});return t}
+function heb(){var d=new Date();
+try{var f=function(x){var p={};new Intl.DateTimeFormat("he-u-ca-hebrew-nu-latn",{day:"numeric",month:"long",year:"numeric"}).formatToParts(x).forEach(function(q){p[q.type]=q.value});return p};
+var p=f(d),n=f(new Date(d.getTime()+864e5));return {day:num(p.day),mid:p.year+"-"+p.month,len:(num(n.day)===1)?num(p.day):30,txt:p.day+" "+p.month}}
+catch(e){return {day:Math.min(d.getDate(),30),mid:"x",len:30,txt:"(לא זוהה תאריך עברי)"}}}
+var SHARED=[2,4,5,6,7,8,11,12,17,18,19,21,23,24,25,27];
+function range(i){return [START[i],i<29?START[i+1]-1+(SHARED.indexOf(i+1)>=0?1:0):LAST]}
+function dayIdxs(){if(S.tab==="today")return (H.day===29&&H.len===29)?[28,29]:[Math.min(H.day,30)-1];return [S.sel]}
+function dark(){return S.theme?S.theme==="dark":matchMedia("(prefers-color-scheme:dark)").matches}
+function look(){var pt=S.pt==="auto"?(dark()?"dark":"white"):S.pt,F={white:"",cream:"sepia(.35)",dark:"invert(.92)",warm:"invert(.9) sepia(.55)"}[pt],B={white:"#fff",cream:"#f4ecd8",dark:"#111",warm:"#1c1812"}[pt],r=document.documentElement;
+r.style.setProperty("--pf","brightness("+S.bri+"%) contrast("+S.con+"%) "+F);r.style.setProperty("--pb",B);r.style.setProperty("--gold",S.ac);
+if(S.theme)r.setAttribute("data-theme",S.theme);else r.removeAttribute("data-theme");
+$("zv").textContent=Math.round(S.zoom*100)+"%";$("bri").value=S.bri;$("con").value=S.con;$("pt").value=S.pt;$("at").value=S.theme;$("ac").value=S.ac}
+function theme(){look()}
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&!e.target.dataset.done){e.target.dataset.done=1;draw(e.target)}})},{rootMargin:"800px"});
+function draw(w){var n=+w.dataset.n,c=w.querySelector("canvas");DOC.getPage(n).then(function(p){var b=p.getViewport({scale:1}),dpr=Math.min(Math.max(window.devicePixelRatio||1,2),3),sc=Math.min(w.clientWidth*S.zoom*dpr*1.4,1700)/b.width,vp=p.getViewport({scale:sc});
+c.width=vp.width;c.height=vp.height;c.style.width=(100*S.zoom)+"%";w.style.minHeight="0";p.render({canvasContext:c.getContext("2d"),viewport:vp}).promise.then(vsUpdate)}).catch(function(){w.textContent="לא ניתן להציג את עמוד "+n})}
+function pageEl(n,note){var w=document.createElement("div");w.className="pg";w.dataset.n=n;w.innerHTML='<canvas></canvas>';var l=document.createElement("div");l.className="lb";l.textContent="עמוד "+n+(note?" · "+note:"");w.appendChild(l);return w}
+function addPages(m,a,b,nt){for(var n=a;n<=b;n++){var w=pageEl(n,nt&&nt[n]);m.appendChild(w);io.observe(w)}}
+function fillSel(){var s=$("daySel");s.innerHTML="";var L=S.tab==="extra"?EXTRAS.map(function(e){return e[0]}):NAMES.map(function(n){return "יום "+n});
+L.forEach(function(t,i){var o=document.createElement("option");o.value=i;o.textContent=t;s.appendChild(o)});s.value=S.tab==="extra"?S.xsel:S.sel}
+function render(){H=heb();look();
+if(S.rm!==H.mid){S.read={};S.rm=H.mid;save()}
+var m=$("main");m.innerHTML="";
+document.querySelectorAll("#tabs button").forEach(function(b){b.className=b.dataset.t===S.tab?"on":""});
+$("sub").style.display=S.tab==="extra"?"flex":"none";
+var dt=$("dots"),now=(H.day===29&&H.len===29)?[28,29]:[Math.min(H.day,30)-1];dt.innerHTML="";
+for(var i=0;i<30;i++)(function(i){var c=document.createElement("button");c.className="dot"+(S.read[i]?" full":"")+(now.indexOf(i)>=0?" now":"");c.textContent=NAMES[i];c.setAttribute("aria-label","יום "+NAMES[i]+(S.read[i]?", נלמד":""));
+c.onclick=function(){if(now.indexOf(i)>=0)S.tab="today";else{S.tab="all";S.sel=i}save();fillSel();render();scrollTo(0,0)};dt.appendChild(c)})(i)
+var ix=dayIdxs(),hd=$("hd");
+if(S.tab==="today")hd.textContent="היום "+H.txt+" · לימוד: "+ix.map(function(i){return "יום "+NAMES[i]}).join(" + ")+(ix.length>1?" (חודש חסר)":"")+" · עמודים "+range(ix[0])[0]+"–"+range(ix[ix.length-1])[1];else if(S.tab==="all")hd.textContent="יום "+NAMES[S.sel]+" · עמודים "+range(S.sel)[0]+"–"+range(S.sel)[1]+"(לא היום) · לחזרה ליום הנוכחי לחצו על 'היום'";else hd.textContent="";
+if(!DOC){m.innerHTML='<div class="card"><b>בחרו את קובץ הספר</b><br>בחרו פעם אחת את ה-PDF של הספר מהמכשיר. הקובץ נשמר רק במכשיר שלכם ולא עולה לשום מקום.<br><br><label class="fl on">בחירת קובץ PDF<input type="file" id="pick" accept="application/pdf"></label><div id="msg"></div></div>';$("pick").onchange=function(){loadFile(this.files[0])};return}
+if(S.tab==="extra"){var e=EXTRAS[S.xsel];addPages(m,e[1],e[2]);return}
+ix.forEach(function(di,k){var rg=range(di),lo=rg[0],hi=rg[1],nt={};
+if(ix.length>1){var t=document.createElement("h3");t.textContent="יום "+NAMES[di];m.appendChild(t)}
+if(SHARED.indexOf(di)>=0)nt[lo]="בתחילת העמוד מסתיים יום "+NAMES[di-1];
+if(SHARED.indexOf(di+1)>=0)nt[hi]="בהמשך העמוד מתחיל יום "+NAMES[di+1];
+addPages(m,lo,hi,nt)});
+var all=ix.every(function(d){return S.read[d]}),b=document.createElement("button");b.className="done"+(all?" on":"");
+b.textContent="סיימתי את לימוד "+ix.map(function(d){return "יום "+NAMES[d]}).join(" ו")+(all?" ✓":"");
+b.onclick=function(){ix.forEach(function(d){S.read[d]=!all});save();render();scrollTo(0,0)};m.appendChild(b)}
+document.querySelectorAll("#tabs button").forEach(function(b){b.onclick=function(){S.tab=b.dataset.t;save();fillSel();render();scrollTo(0,0)}});
+$("daySel").onchange=function(){if(S.tab==="extra")S.xsel=+this.value;else S.sel=+this.value;save();render();scrollTo(0,0)};
+$("bSet").onclick=function(){$("panel").classList.toggle("open")};
+$("zm").onclick=function(){S.zoom=Math.max(1,S.zoom-.25);save();render()};
+$("zp").onclick=function(){S.zoom=Math.min(3,S.zoom+.25);save();render()};
+$("bri").oninput=function(){S.bri=+this.value;save();look()};
+$("con").oninput=function(){S.con=+this.value;save();look()};
+$("pt").onchange=function(){S.pt=this.value;save();look()};
+$("at").onchange=function(){S.theme=this.value;save();look()};
+$("ac").onchange=function(){S.ac=this.value;save();look()};
+$("rs").onclick=function(){S.bri=100;S.con=100;S.pt="auto";S.theme="";S.ac="#ffc61a";save();look()};
+function loadFile(f){if(!f)return;var msg=$("msg");if(msg)msg.textContent="טוען...";
+idb("readwrite",function(s){return s.put(f,"pdf")}).catch(function(){});
+openBlob(f).then(function(){if(DOC.numPages!==514)alert("שימו לב: בקובץ יש "+DOC.numPages+" עמודים ולא 514, ייתכן שהימים לא יתאימו. אפשר לתקן בהגדרות.")}).catch(function(){if(msg)msg.textContent="לא הצלחתי לפתוח את הקובץ"})};
+var vs=$("vs"),thumb=vs.firstChild,tick=false;
+function vsUpdate(){tick=false;var d=document.documentElement,max=d.scrollHeight-innerHeight;vs.style.display=max>200?"block":"none";
+var p=max>0?Math.min(1,Math.max(0,scrollY/max)):0;thumb.style.top=(p*(vs.clientHeight-thumb.offsetHeight))+"px"}
+addEventListener("scroll",function(){if(!tick){tick=true;requestAnimationFrame(vsUpdate)}},{passive:true});addEventListener("resize",vsUpdate);
+theme();fillSel();
+if(typeof pdfjsLib==="undefined"){$("main").textContent="לא ניתן לטעון את רכיב הצגת ה-PDF. בדקו חיבור לאינטרנט."}
+else{pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+render();idb("readonly",function(s){return s.get("pdf")}).then(function(b){if(b)return openBlob(b)}).catch(function(){})}
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0)navigator.serviceWorker.register("sw.js").catch(function(){});
+</script>
+</body>
+</html>
